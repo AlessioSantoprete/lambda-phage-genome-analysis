@@ -1,6 +1,8 @@
 from Bio import SeqIO
 from Bio.SeqUtils import gc_fraction
 import pandas as pd
+import matplotlib.pyplot as plt
+
 
 
 #Read the sequence file
@@ -8,24 +10,8 @@ file = SeqIO.read("sequence.gb", "genbank") # reads sequence/gb file and stores 
 nucleotide_seq = file.seq #Stores the complete genome's DNA seuqence
 
 print("ID: ", file.id)
-#print("Sequence: ", nucleotide_seq)
 print("ORGANISM: ", file.annotations["organism"])
 
-# prints the keys in the dictionary
-#print("DICTIONARY_KEYS: " , file.annotations.keys()) 
-
-'''
-#print the CDS (coding sequences) from the file.seq file only
-for feature in file.features:
-    if feature.type == "CDS":
-        if feature.qualifiers.get("gene") ==  ["Q"]:
-            q_dna = feature.extract(file.seq)
-            print("Gene Q DNA: ", q_dna)
-
-# Calculate GC content of the Q gene sequence
-gc_content = gc_fraction(q_dna) * 100
-print(f"GC Content: {gc_content:.2f}%")
-'''
 
 #Function
 def calculate_gc_content(dna_sequence):
@@ -56,19 +42,30 @@ df['GC_count'] = df['DNA_Length'] * df['GC_percent'] / 100
 print(df)
 
 #Save the CDS results without the DataFrame index
-df.to_csv("lambda_cds_results.csv", index=False)
+df.to_csv("lambda_cds_results.csv", index=False, float_format="%.2f")
 
 GC_count_sum = df["GC_count"].sum()
 DNA_Length_sum = df["DNA_Length"].sum()
 overall_GC_percentage = GC_count_sum / DNA_Length_sum * 100
-print(overall_GC_percentage)
+print(f"Combined CDS GC content: {overall_GC_percentage:.2f}%")
 
-'''
+
 #Test whether the function is working properly
 sequence = "ATGC" 
 print(f"The GC content of sequence is: ", calculate_gc_content(sequence),"%")
-'''
 
+
+
+#Graph to show the distribution of GC content in the lambda phage CDS sequences
+values = df['GC_percent']
+plt.hist(values, color="steelblue", edgecolor="black")
+
+plt.title('Distribution of GC Content in Lambda Phage CDS')
+plt.xlabel('GC Content (%)')
+plt.ylabel('Number of CDS')
+
+plt.savefig("lambda_gc_histogram.png", dpi=300, bbox_inches="tight")
+plt.show()
 
 
 
